@@ -49,13 +49,10 @@ popups.forEach((popup) => {
 });
 
 function keydownPopupHandler(evt) {
-    popups.forEach((popup) => {
-        if (evt.key === 'Escape') {
-            if (popup.classList.contains('popup_is-opened')) {
-                closeModal(popup);
-            }
-        }
-    });
+    const popupOpened = document.querySelector('.popup_is-opened');
+    if (evt.key === 'Escape') {
+        closeModal(popupOpened);
+    }
 }
 
 export { keydownPopupHandler };

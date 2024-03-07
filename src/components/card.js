@@ -2,17 +2,33 @@ import { cardTemplate } from "../scripts/constants.js";
 import { getDeleteCards, getLikeCards, getUnlikeCards } from '../components/api.js';
 
 function deleteCard(event) {
-    event.target.parentElement.remove();
-    getDeleteCards(event);
+    getDeleteCards(event)
+        .then((data) => {
+            const parent = event.target.closest('li');
+            parent.remove();
+        })
+        .catch((err) => {
+            console.log(`Ошибка: ${err}`);
+        });
 }
 
 function activeLike(evt) {
     if (evt.target.classList.contains('card__like-button_is-active')) {
-        evt.target.classList.toggle('card__like-button_is-active');
-        getUnlikeCards(evt);
+        getUnlikeCards(evt)
+            .then((data) => {
+                evt.target.classList.toggle('card__like-button_is-active');
+            })
+            .catch((err) => {
+                console.log(`Ошибка: ${err}`);
+            });
     } else {
-        evt.target.classList.add('card__like-button_is-active');
-        getLikeCards(evt);
+        getLikeCards(evt)
+            .then((data) => {
+                evt.target.classList.add('card__like-button_is-active');
+            })
+            .catch((err) => {
+                console.log(`Ошибка: ${err}`);
+            });
     }
 }
 

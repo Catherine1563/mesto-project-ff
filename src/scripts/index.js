@@ -7,18 +7,22 @@ import { createCard, deleteCard, activeLike } from '../components/card.js';
 import { openModal, closeModal } from '../components/modal.js';
 import { placeList, buttonEditProfile, buttonEditNewCard, popups, popupEditProfile, popupNewCard, popupCardImage, popupImage, popupCaption, nameCard, linkImage, formElement, nameInput, jobInput, profileName, profileDescription, popupEditImageProfile, buttonEditImageProfile } from './constants.js';
 import { enableValidation, clearValidation } from '../components/validation.js';
-import { getCreateCards, getInitialCards, getNameAndDescriptionProfile, getNameAndLinkCards, getImageProfile, getIdUsers } from '../components/api.js';
+import { getCreateCards, getNameAndDescriptionProfile, getNameAndLinkCards, getImageProfile, getIdUsers } from '../components/api.js';
 import { checkResponse } from '../utils/checkingapi.js';
 
 let userId;
 
-getIdUsers(checkResponse)
-    .then((result) => {
-        userId = result._id
-    })
-    .catch((err) => {
-        console.log(`Ошибка: ${err}`);
-    });
+const validationSettings = {
+    formSelector: '.popup__form',
+    inputSelector: '.popup__input',
+    submitButtonSelector: '.popup__button',
+    inactiveButtonClass: 'button_inactive',
+    inactiveButton: '.button_inactive',
+    inputErrorClass: 'form__input_type_error',
+    errorClass: 'form__input-error_active'
+};
+
+enableValidation(validationSettings);
 
 const renderLoading = (isLoading, popupButtonSave) => {
     if (isLoading) {
@@ -37,41 +41,13 @@ function addNewCardPopupOpen(evt) {
     openModal(popupCardImage);
 }
 
-export { addNewCardPopupOpen };
-
 // @todo: Вывести карточки на страницу
-getCreateCards(checkResponse)
-    .then((data) => {
-        data.forEach(element => {
-            placeList.append(createCard(element.name, element.link, deleteCard, activeLike, addNewCardPopupOpen));
+Promise.all([getIdUsers(checkResponse), getCreateCards(checkResponse)])
+    .then(([userData, cards]) => {
+        userId = userData._id
+        cards.forEach(element => {
+            placeList.append(createCard(element.name, element.link, deleteCard, activeLike, addNewCardPopupOpen, userId));
         });
-    })
-    .catch((err) => {
-        console.log(`Ошибка: ${err}`);
-    });
-
-getInitialCards(checkResponse)
-    .then((data) => {
-        const span_count = placeList.querySelectorAll('.card__count-like');
-        for (let i = 0; i < data.length; i++) {
-            span_count[i].textContent = data[i].likes.length;
-        }
-        const button_delete = placeList.querySelectorAll('.card__delete-button');
-        const button_like = placeList.querySelectorAll('.card__like-button');
-        const item_card = placeList.querySelectorAll('.card');
-        for (let i = 0; i < data.length; i++) {
-            item_card[i].setAttribute('id', data[i]._id);
-            if (data[i].owner._id === userId) {
-                button_delete[i].style.visibility = 'visible';
-            } else {
-                button_delete[i].style.visibility = 'hidden';
-            }
-            for (let j = 0; j < data[i].likes.length; j++) {
-                if (data[i].likes[j]._id === userId) {
-                    button_like[i].classList.add('card__like-button_is-active');
-                }
-            }
-        }
     })
     .catch((err) => {
         console.log(`Ошибка: ${err}`);
@@ -82,23 +58,21 @@ popups.forEach(function(elem) {
 });
 
 function editProfilePopupOpen() {
-    const buttonLoading = popupEditProfile.querySelector('.popup__button');
     const nameValue = profileName.textContent;
     const jobValue = profileDescription.textContent;
     nameInput.value = nameValue;
     jobInput.value = jobValue;
-    const button = popupEditProfile.querySelector('.popup__button');
-    button.classList.remove('button_inactive');
+    clearValidation(formElement, validationSettings);
     openModal(popupEditProfile);
 };
 
 function openPopupNewCard() {
-    const buttonLoading = popupNewCard.querySelector('.popup__button');
+    clearValidation(document.forms['new-place'], validationSettings);
     openModal(popupNewCard);
 }
 
 function openPopupImageProfile() {
-    const buttonLoading = popupEditImageProfile.querySelector('.popup__button');
+    clearValidation(document.forms['edit-image-profile'], validationSettings);
     openModal(popupEditImageProfile);
 }
 buttonEditProfile.addEventListener('click', editProfilePopupOpen);
@@ -118,32 +92,6 @@ function handleProfileFormSubmit(evt) {
     renderLoading(true, evt.submitter);
     getNameAndDescriptionProfile(nameInput.value, jobInput.value, checkResponse)
         .then((result) => {
-            getInitialCards(checkResponse)
-                .then((data) => {
-                    const span_count = placeList.querySelectorAll('.card__count-like');
-                    for (let i = 0; i < data.length; i++) {
-                        span_count[i].textContent = data[i].likes.length;
-                    }
-                    const button_delete = placeList.querySelectorAll('.card__delete-button');
-                    const button_like = placeList.querySelectorAll('.card__like-button');
-                    const item_card = placeList.querySelectorAll('.card');
-                    for (let i = 0; i < data.length; i++) {
-                        item_card[i].setAttribute('id', data[i]._id);
-                        if (data[i].owner._id === userId) {
-                            button_delete[i].style.visibility = 'visible';
-                        } else {
-                            button_delete[i].style.visibility = 'hidden';
-                        }
-                        for (let j = 0; j < data[i].likes.length; j++) {
-                            if (data[i].likes[j]._id === userId) {
-                                button_like[i].classList.add('card__like-button_is-active');
-                            }
-                        }
-                    }
-                })
-                .catch((err) => {
-                    console.log(`Ошибка: ${err}`);
-                });
             profileName.textContent = nameInput.value;
             profileDescription.textContent = jobInput.value;
             closeModal(popupEditProfile);

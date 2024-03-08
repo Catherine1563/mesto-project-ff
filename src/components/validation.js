@@ -55,26 +55,15 @@ const setEventListeners = (formElement, settings) => {
     });
 };
 
-function clearValidation(modal, enableValidation) {
-    const errorMessangers = modal.querySelectorAll('.form__input-error');
-    const inputPopupProfile = modal.querySelectorAll('.popup__input');
-    errorMessangers.forEach((item) => {
-        item.textContent = '';
-        item.classList.remove('form__input-error_active');
+function clearValidation(formElement, settings) {
+    const inputList = formElement.querySelectorAll(settings.inputSelector);
+    const buttonForm = formElement.querySelector(settings.submitButtonSelector);
+    inputList.forEach((item) => {
+        hideInputError(formElement, item, settings);
     });
-    inputPopupProfile.forEach((item) => {
-        item.classList.remove('form__input_type_error');
-    });
+    buttonForm.disabled = true;
+    buttonForm.classList.add(settings.inactiveButtonClass);
 }
-
-enableValidation({
-    formSelector: '.popup__form',
-    inputSelector: '.popup__input',
-    submitButtonSelector: '.popup__button',
-    inactiveButtonClass: 'button_inactive',
-    inputErrorClass: 'form__input_type_error',
-    errorClass: 'form__input-error_active'
-});
 
 function enableValidation(settings) {
     const formList = Array.from(document.querySelectorAll(settings.formSelector));

@@ -44,7 +44,11 @@ function addNewCardPopupOpen(evt) {
 // @todo: Вывести карточки на страницу
 Promise.all([getIdUsers(checkResponse), getCreateCards(checkResponse)])
     .then(([userData, cards]) => {
-        userId = userData._id
+        userId = userData._id;
+        const imageProfile = document.querySelector('.profile__image');
+        imageProfile.style.backgroundImage = 'url(' + userData.avatar + ')';
+        profileName.textContent = userData.name;
+        profileDescription.textContent = userData.about;
         cards.forEach(element => {
             placeList.append(createCard(element.name, element.link, deleteCard, activeLike, addNewCardPopupOpen, userId));
         });
